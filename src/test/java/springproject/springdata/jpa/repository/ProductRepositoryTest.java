@@ -176,4 +176,12 @@ class ProductRepositoryTest {
             assertEquals(0, delete);
             // tidak otomatis rollback jika terjadi error
     }
+
+    @Test
+    void namedQueryWithPageable() {
+        Pageable pageable = PageRequest.of(0,1);
+        List<Product> products = productRepository.searchProductUsingName("Iphonr 15 promax", pageable);
+        assertEquals("Iphonr 15 promax", products.get(0).getName());
+        assertEquals(1L, products.size());
+    }
 }
