@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.support.TransactionOperations;
 import springproject.springdata.jpa.entity.Category;
 import springproject.springdata.jpa.entity.Product;
 
@@ -18,9 +19,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProductRepositoryTest {
 
     @Autowired
-    CategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
     @Autowired
-    ProductRepository productRepository;
+    private ProductRepository productRepository;
+    @Autowired
+    private TransactionOperations transactionOperations;
 
     @Test
     void createProduct() {
@@ -109,7 +112,68 @@ class ProductRepositoryTest {
         assertEquals(2, products.getTotalPages());
         assertEquals("Iphonr 15 promax", products.getContent().get(0).getName());
 
+    }
 
+    @Test
+    void testCount() {
+        Long count = productRepository.count();
+        assertEquals(2L, count);
 
+        count = productRepository.countByCategory_Name("Gadget mahal");
+        assertEquals(2L, count);
+
+        count = productRepository.countByCategory_Name("Kosong");
+        assertEquals(0L, count);
+
+    }
+
+    @Test
+    void testExist() {
+        boolean exists = productRepository.existsByName("Iphonr 15 promax");
+        assertTrue(exists);
+
+        exists = productRepository.existsByName("Iphonr 19 promax");
+        assertFalse(exists);
+    }
+
+    @Test
+    void testDeleteOld() {
+        transactionOperations.executeWithoutResult(transactionStatus -> { //transactional 1
+            Category category = categoryRepository.findById(1L).orElse(null);
+            assertNotNull(category);
+
+            Product product = new Product();
+            product.setName("samsung galaxy J5");
+            product.setPrice(2_000_000L);
+            product.setCategory(category);
+            productRepository.save(product); //transactional 1
+
+            int delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 1
+            assertEquals(1, delete);
+
+            delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 1
+            assertEquals(0, delete);
+            // otomatis rollback jika terjadi error
+        });
+    }
+
+    @Test
+    void testDeleteNew() {
+
+            Category category = categoryRepository.findById(1L).orElse(null);
+            assertNotNull(category);
+
+            Product product = new Product();
+            product.setName("samsung galaxy J5");
+            product.setPrice(2_000_000L);
+            product.setCategory(category);
+            productRepository.save(product); //transactional 1 sendiri
+
+            int delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 2 sensdiri
+            assertEquals(1, delete);
+
+            delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 3 sendiri
+            assertEquals(0, delete);
+            // tidak otomatis rollback jika terjadi error
     }
 }
