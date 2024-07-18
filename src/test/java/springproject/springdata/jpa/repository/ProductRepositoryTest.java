@@ -184,4 +184,38 @@ class ProductRepositoryTest {
         assertEquals("Iphonr 15 promax", products.get(0).getName());
         assertEquals(1L, products.size());
     }
+
+    @Test
+    void searchProductLikeWithPageable() {
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Order.desc("id")));
+        Page<Product> products = productRepository.searchProduct("%Iphonr%", pageable);
+        assertEquals(1, products.getContent().size());
+
+        assertEquals(2, products.getTotalPages());
+        assertEquals(0, products.getNumber());
+        assertEquals(2, products.getTotalElements());
+
+        products = productRepository.searchProduct("%Gadget%", pageable);
+        assertEquals(1, products.getContent().size());
+
+        assertEquals(2, products.getTotalPages());
+        assertEquals(0, products.getNumber());
+        assertEquals(2, products.getTotalElements());
+    }
+
+    @Test
+    void deleteWithModifying() {
+        transactionOperations.executeWithoutResult(transactionStatus -> {
+            int deleteProduct = productRepository.deleteProductUsingName("salah");
+            assertEquals(0, deleteProduct);
+
+            deleteProduct = productRepository.updateProductPriceToZero(1L);
+            assertEquals(1, deleteProduct);
+
+            Product product = productRepository.findById(1L).orElse(null);
+            assertNotNull(product);
+            assertEquals(0L, product.getPrice());
+
+        });
+    }
 }
