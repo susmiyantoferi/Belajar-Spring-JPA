@@ -60,4 +60,15 @@ class CategoryRepositoryTest {
         assertEquals("Gadget mahal", allByNameLike.get(0).getName());
 
     }
+
+    @Test
+    void auditDate() {
+        Category category = new Category();
+        category.setName("simple test category");
+        categoryRepository.save(category);
+
+        assertNotNull(category.getId());
+        assertNotNull(category.getCreatedDate());
+        assertNotNull(category.getLastModifiedDate());
+    }
 }
