@@ -8,6 +8,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.support.TransactionOperations;
 import springproject.springdata.jpa.entity.Category;
 import springproject.springdata.jpa.entity.Product;
+import springproject.springdata.jpa.model.ProductPrice;
+import springproject.springdata.jpa.model.SimpleProduct;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -258,6 +260,16 @@ class ProductRepositoryTest {
 
         List<Product> products = productRepository.findAll(specification);
         assertEquals(2, products.size());
+    }
+
+    @Test
+    void projection() {
+        List<SimpleProduct> simpleProducts = productRepository.findAllByNameLike("%Iphonr%", SimpleProduct.class);
+        assertEquals(2, simpleProducts.size());
+
+        List<ProductPrice> productPrices = productRepository.findAllByNameLike("%Iphonr%", ProductPrice.class);
+        assertEquals(2, productPrices.size());
+
     }
 
 

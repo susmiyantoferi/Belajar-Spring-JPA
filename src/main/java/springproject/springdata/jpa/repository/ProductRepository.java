@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import springproject.springdata.jpa.entity.Category;
 import springproject.springdata.jpa.entity.Product;
+import springproject.springdata.jpa.model.SimpleProduct;
 
 import javax.xml.catalog.Catalog;
 import java.util.List;
@@ -21,6 +22,9 @@ import java.util.stream.Stream;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+
+    // fitur dynamic projection
+    <T> List<T> findAllByNameLike(String name, Class<T> tClass);
 
     // Slice next or previous page
     Slice<Product> findAllByCategory(Category category, Pageable pageable);
@@ -44,13 +48,19 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             value = "select p from Product p where p.name like :name or p.category.name like :name",
             countQuery = "select count(p) from Product p where p.name like :name or p.category.name like :name"
     )
-    Page<Product>searchProduct(@Param("name")String name, Pageable pageable);
+    Page<Product> searchProduct(@Param("name") String name, Pageable pageable);
+
     @Transactional
     int deleteByName(String name);
+
     boolean existsByName(String name);
+
     Long countByCategory_Name(String name);
+
     List<Product> findAllByCategory_Name(String name);
+
     List<Product> findAllByCategory_Name(String name, Sort sort);
+
     //List<Product> findAllByCategory_Name(String name, Pageable pageable);
     Page<Product> findAllByCategory_Name(String name, Pageable pageable);
 
