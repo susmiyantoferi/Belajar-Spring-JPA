@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.support.TransactionOperations;
 import springproject.springdata.jpa.entity.Category;
 import springproject.springdata.jpa.entity.Product;
@@ -230,7 +231,7 @@ class ProductRepositoryTest {
 
     @Test
     void slice() {
-        Pageable pageable = PageRequest.of(0,1);
+        Pageable pageable = PageRequest.of(0, 1);
 
         Category category = categoryRepository.findById(1L).orElse(null);
         assertNotNull(category);
@@ -238,9 +239,26 @@ class ProductRepositoryTest {
         Slice<Product> slice = productRepository.findAllByCategory(category, pageable);
 
         //manampilkan konten product
-        while (slice.hasNext()){
+        while (slice.hasNext()) {
             slice = productRepository.findAllByCategory(category, slice.nextPageable());
             // menampilkan konten product
         }
     }
+
+    @Test
+    void specification() {
+        Specification<Product> specification = (root, criteriaQuery, criteriaBuilder) -> {
+            return criteriaQuery.where(
+                    criteriaBuilder.or(
+                            criteriaBuilder.equal(root.get("name"), "Iphonr 15 promax"),
+                            criteriaBuilder.equal(root.get("name"), "Iphonr 16 promax")
+                    )
+            ).getRestriction();
+        };
+
+        List<Product> products = productRepository.findAll(specification);
+        assertEquals(2, products.size());
+    }
+
+
 }
