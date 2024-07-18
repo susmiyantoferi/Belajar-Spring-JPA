@@ -12,6 +12,7 @@ import springproject.springdata.jpa.entity.Category;
 import springproject.springdata.jpa.entity.Product;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,7 +46,7 @@ class ProductRepositoryTest {
             product.setCategory(category);
             productRepository.save(product);
         }
-        
+
     }
 
     @Test
@@ -62,9 +63,9 @@ class ProductRepositoryTest {
         Sort sort = Sort.by(Sort.Order.desc("id"));
         List<Product> products = productRepository.findAllByCategory_Name("Gadget mahal", sort);
         assertNotNull(products);
-        assertEquals(2,products.size());
-        assertEquals("Iphonr 16 promax", products.get(0).getName() );
-        assertEquals("Iphonr 15 promax", products.get(1).getName() );
+        assertEquals(2, products.size());
+        assertEquals("Iphonr 16 promax", products.get(0).getName());
+        assertEquals("Iphonr 15 promax", products.get(1).getName());
     }
 
 //    @Test
@@ -160,26 +161,26 @@ class ProductRepositoryTest {
     @Test
     void testDeleteNew() {
 
-            Category category = categoryRepository.findById(1L).orElse(null);
-            assertNotNull(category);
+        Category category = categoryRepository.findById(1L).orElse(null);
+        assertNotNull(category);
 
-            Product product = new Product();
-            product.setName("samsung galaxy J5");
-            product.setPrice(2_000_000L);
-            product.setCategory(category);
-            productRepository.save(product); //transactional 1 sendiri
+        Product product = new Product();
+        product.setName("samsung galaxy J5");
+        product.setPrice(2_000_000L);
+        product.setCategory(category);
+        productRepository.save(product); //transactional 1 sendiri
 
-            int delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 2 sensdiri
-            assertEquals(1, delete);
+        int delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 2 sensdiri
+        assertEquals(1, delete);
 
-            delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 3 sendiri
-            assertEquals(0, delete);
-            // tidak otomatis rollback jika terjadi error
+        delete = productRepository.deleteByName("samsung galaxy J5"); //transactional 3 sendiri
+        assertEquals(0, delete);
+        // tidak otomatis rollback jika terjadi error
     }
 
     @Test
     void namedQueryWithPageable() {
-        Pageable pageable = PageRequest.of(0,1);
+        Pageable pageable = PageRequest.of(0, 1);
         List<Product> products = productRepository.searchProductUsingName("Iphonr 15 promax", pageable);
         assertEquals("Iphonr 15 promax", products.get(0).getName());
         assertEquals(1L, products.size());
@@ -216,6 +217,17 @@ class ProductRepositoryTest {
             assertNotNull(product);
             assertEquals(0L, product.getPrice());
 
+        });
+    }
+
+    @Test
+    void stream() {
+        transactionOperations.executeWithoutResult(transactionStatus -> {
+            Category category = categoryRepository.findById(1L).orElse(null);
+            assertNotNull(category);
+
+            Stream<Product> stream = productRepository.streamAllByCategory(category);
+            stream.forEach(product -> System.out.println(product.getId() + " : " + product.getName()));
         });
     }
 }
