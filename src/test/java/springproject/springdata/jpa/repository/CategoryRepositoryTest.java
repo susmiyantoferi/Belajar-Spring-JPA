@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import springproject.springdata.jpa.entity.Category;
 
 import java.util.List;
@@ -70,5 +72,30 @@ class CategoryRepositoryTest {
         assertNotNull(category.getId());
         assertNotNull(category.getCreatedDate());
         assertNotNull(category.getLastModifiedDate());
+    }
+
+    // select with example query
+    @Test
+    void exampleQuery() {
+        Category category = new Category();
+        category.setId(1L);
+        category.setName("kosmetik");
+
+        Example<Category> example = Example.of(category);
+        List<Category> categories = categoryRepository.findAll(example);
+        assertEquals(1, categories.size());
+    }
+
+    @Test
+    void exampleQueryMatcher() {
+        Category category = new Category();
+        category.setId(1L);
+        category.setName("KOSMETIK");
+
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues().withIgnoreCase();
+
+        Example<Category> example = Example.of(category, matcher);
+        List<Category> categories = categoryRepository.findAll(example);
+        assertEquals(1, categories.size());
     }
 }
