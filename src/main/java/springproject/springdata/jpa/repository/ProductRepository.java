@@ -3,6 +3,7 @@ package springproject.springdata.jpa.repository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,12 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import springproject.springdata.jpa.entity.Category;
 import springproject.springdata.jpa.entity.Product;
 
+import javax.xml.catalog.Catalog;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+    // Slice next or previous page
+    Slice<Product> findAllByCategory(Category category, Pageable pageable);
+
+    // stream get all data bertahap
     Stream<Product> streamAllByCategory(Category category);
 
     //query anotation modifying digunankan untuk operasi transacsional
